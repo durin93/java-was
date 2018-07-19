@@ -5,12 +5,15 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import annotation.Controller;
+import annotation.RequestMapping;
 import db.DataBase;
 import model.HttpRequest;
 import model.HttpResponse;
 import model.User;
-import webserver.RequestHandler;
 
+@Controller
+@RequestMapping
 public class CreateUserController extends AbstractController  {
 	private static final Logger log = LoggerFactory.getLogger(AbstractController.class);
 
