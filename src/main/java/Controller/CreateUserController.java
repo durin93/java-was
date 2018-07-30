@@ -1,36 +1,30 @@
-package Controller;
-
-import java.io.IOException;
+package controller;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import annotation.Autowired;
+import annotation.Controller;
+import annotation.RequestMapping;
 import db.DataBase;
-import model.HttpRequest;
-import model.HttpResponse;
-import model.User;
-import webserver.RequestHandler;
+import dto.UserDto;
 
-public class CreateUserController extends AbstractController  {
-	private static final Logger log = LoggerFactory.getLogger(AbstractController.class);
-
+@Controller
+@RequestMapping("/create")
+public class CreateUserController {
+	private static final Logger log = LoggerFactory.getLogger(CreateUserController.class);
 	
-	@Override
-	void doPost(HttpRequest request, HttpResponse response) {
-		log.debug("requestUrl : {}",request.getUrl());
+	@Autowired
+	private DataBase database;
+	
+	@RequestMapping("")
+	public String create(UserDto userDto) {
 		
-			User user = new User(request.getParameter("userId"), request.getParameter("password"), request.getParameter("name"),
-					request.getParameter("email"));
-			log.debug("User : {}", user.toString());
-
-			DataBase.addUser(user);
-			response.sendRedirect();
+			
+			log.debug("UserDto :{}", userDto.toString());
+			database.addUser(userDto.toUser());
+			System.out.println("오냐생성");
+			return "redirect:/index.html";
 	}
-
-
-	@Override
-	void doGet(HttpRequest request, HttpResponse response) throws IOException {
-	}
-
 
 }
