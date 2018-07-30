@@ -16,9 +16,9 @@ import org.slf4j.LoggerFactory;
 import annotation.Controller;
 import annotation.RequestMapping;
 
-public class ControllerFactory {
+public class BeanFactory {
 
-	private static final Logger log = LoggerFactory.getLogger(ControllerFactory.class);
+	private static final Logger log = LoggerFactory.getLogger(BeanFactory.class);
 	private static Map<String, HandlerExecution> controllers = new HashMap<String, HandlerExecution>();
 	private static String ROOT;
 
