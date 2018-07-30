@@ -23,7 +23,6 @@ public class BeanFactory {
 	private static final Logger log = LoggerFactory.getLogger(BeanFactory.class);
 	private static Map<String, HandlerExecution> controllers = new HashMap<String, HandlerExecution>();
 	private static Map<String, Object> beans = new HashMap<String, Object>();
-
 	private static String ROOT;
 
 	static {
@@ -38,21 +37,21 @@ public class BeanFactory {
 		if (directory.exists()) {
 			scan(directory.listFiles(), classes, ROOT);
 		}
-
-		for (Class<?> clazz : classes) {
-			addControllerBean(clazz);
-			addRepository(clazz);
-		}
-		
+		addBeans(classes);
 		inject();
 
-		
 		for (Class<?> clazz : classes) {
 			if (clazz.isAnnotationPresent(Controller.class)) {
 				addController(clazz);
 			}
 		}
+	}
 
+	public static void addBeans(List<Class<?>> classes) {
+		for (Class<?> clazz : classes) {
+			addControllerBean(clazz);
+			addRepository(clazz);
+		}
 	}
 
 	public static void scan(File[] files, List<Class<?>> classes, String presentPath) {
@@ -74,8 +73,7 @@ public class BeanFactory {
 	public static void addClassFileToList(String fileName, String directoryName, List<Class<?>> classes) {
 		try {
 			Class<?> clazz = Class.forName(
-					directoryName.substring(ROOT.length()) + "." + fileName.substring(0, fileName.length() - 6)); // Dynamic
-																													// Loading
+					directoryName.substring(ROOT.length()) + "." + fileName.substring(0, fileName.length() - 6)); // Dynamic Loading
 			classes.add(clazz);
 			log.debug("Path ! : {}", directoryName);
 			log.debug("File Name! : {}", fileName);
@@ -107,7 +105,6 @@ public class BeanFactory {
 		try {
 			if (clazz.isAnnotationPresent(Controller.class)) {
 				log.debug("clazz name" + clazz.getName());
-
 				beans.put(clazz.getName(), clazz.newInstance());
 			}
 		} catch (Exception e) {
@@ -115,11 +112,12 @@ public class BeanFactory {
 			e.printStackTrace();
 		}
 	}
+
 	public static void addRepository(Class<?> clazz) {
 		try {
 			if (clazz.isAnnotationPresent(Repository.class)) {
 				log.debug("clazz name" + clazz.getName());
-				
+
 				beans.put(clazz.getName(), clazz.newInstance());
 			}
 		} catch (Exception e) {
@@ -131,25 +129,24 @@ public class BeanFactory {
 	public static void inject() {
 		try {
 			Set<String> keys = beans.keySet();
-
 			for (String key : keys) {
 				Object bean = beans.get(key);
-
-				Field[] fields = bean.getClass().getDeclaredFields();
-
-				for (Field field : fields) {
-					field.setAccessible(true);
-					if (field.isAnnotationPresent(Autowired.class)) {
-						log.debug("beans 에서 꺼낸 값" + beans.get(field.getType().getName()));
-						field.set(bean, beans.get(field.getType().getName()));
-						System.out.println("필드의 값" + field.get(bean));
-					}
-				}
+				injectData(bean.getClass().getDeclaredFields(), bean);
 			}
 
 		} catch (Exception e) {
 			log.debug("addRepository error");
 			e.printStackTrace();
+		}
+	}
+
+	public static void injectData(Field[] fields, Object bean) throws Exception {
+		for (Field field : fields) {
+			field.setAccessible(true); //private access 허용
+			if (field.isAnnotationPresent(Autowired.class)) {
+				field.set(bean, beans.get(field.getType().getName()));
+				log.debug("필드에 주입된 값과 beanFactory에 담긴 값은" + field.get(bean).equals(beans.get(field.getType().getName())));
+			}
 		}
 	}
 
